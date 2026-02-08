@@ -103,22 +103,42 @@ def generate_club_blog_pro(audio_file_path):
 
     # 3. The Prompt
     prompt = """
-    You are the Scribe for a University Tech Club. Listen to this discussion.
-    
-    Goal: Create a structured blog post.
-    
-    1. **Content:** Summarize the technical discussion into a blog post (Markdown).
-    2. **Resources:** If you know relevant documentation links or tutorials, include up to 3 (optional).
-    3.  **Visuals:** Describe a cool cover image for this post in 1 sentence.
+    You are an expert Content Architect and Editor. Your goal is to transform this audio into a high-quality, structured document that perfectly matches its context.
 
-    Output strictly in this JSON format:
+    ### 1. Analyze the Audio Context:
+    First, identify what kind of audio this is:
+    - **Meeting/Discussion:** Multiple people discussing topics, making decisions.
+    - **Interview/Podcast:** Host and guest(s) Q&A format.
+    - **Lecture/Talk:** Single speaker teaching or explaining concepts.
+    - **Story/Narrative:** Personal experience or storytelling.
+    - **Casual Conversation:** Informal chat.
+
+    ### 2. Output Requirements:
+    Based on the context, structure the `blog_markdown` field accordingly (in Markdown):
+
+    - **If Meeting:** Use **Meeting Minutes** format. Include Attendees (inferred), Agenda, Key Discussion Points, Decisions Made, and Action Items.
+    - **If Interview:** Use **Q&A** or **Feature Article** format. Highlight the guest's insights.
+    - **If Lecture:** Use **Study Guide** or **Article** format with clear headings and bullet points.
+    - **If Story/Casual:** Use **Blog Post** narrative format.
+
+    ### 3. General Rules:
+    - **Title:** Create a catchy, relevant title.
+    - **Summary:** A concise executive summary (2-3 sentences).
+    - **Speakers:** If multiple speakers are detected, differentiate them (e.g., "Speaker A", "Host", "Guest", or by name if mentioned).
+    - **Tone:** Professional yet engaging.
+    - **Links:** If specific tools, books, or real-world concepts are mentioned, provide up to 3 relevant Google Search-style links in the `external_links` array.
+
+    ### 4. Visuals:
+    - **Image Prompt:** Write a 1-sentence prompt for an AI image generator to create a relevant cover image for this content.
+
+    ### Output Format (Strict JSON):
     {
-        "title": "String",
-        "summary": "String",
-        "blog_markdown": "String (Markdown)",
-        "image_prompt": "String",
+        "title": "Calculated Title",
+        "summary": "Brief summary...",
+        "blog_markdown": "# Markdown Content...",
+        "image_prompt": "Description for image generation...",
         "external_links": [
-            {"title": "String", "url": "String", "description": "String"}
+            {"title": "Resource Name", "url": "https://...", "description": "Brief description"}
         ]
     }
     """

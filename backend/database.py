@@ -38,6 +38,19 @@ def init_db():
             collection_name=COLLECTION_NAME,
             vectors_config=models.VectorParams(size=768, distance=models.Distance.COSINE)
         )
+    
+    # CRITICAL: Create keyword index on 'status' field for filtering
+    try:
+        client.create_payload_index(
+            collection_name=COLLECTION_NAME,
+            field_name="status",
+            field_schema=models.PayloadSchemaType.KEYWORD
+        )
+        logger.info("Payload index on 'status' field created/verified")
+    except Exception as e:
+        # Index might already exist, log and continue
+        logger.info(f"Status index creation skipped (may already exist): {e}")
+
 
 def insert_draft(id: str, status: str = "PROCESSING"):
     """Creates a placeholder entry for a new upload."""
