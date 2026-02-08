@@ -48,8 +48,8 @@ file: [audio_file.mp3]
 
 **Notes:**
 - Only `status` and `created_at` fields present
-- No content yet
-- Poll again in 5-10 seconds
+  - No content yet
+  - Poll again in 5-10 seconds
 
 ---
 
@@ -82,12 +82,12 @@ file: [audio_file.mp3]
 
 **All Fields Present:**
 - ✅ `status`: Always "REVIEW_PENDING"
-- ✅ `created_at`: UUID v1
-- ✅ `title`: String, 10-200 characters
-- ✅ `summary`: String, 50-1000 characters
-- ✅ `content`: Markdown string, 500-10000 characters
-- ✅ `image_url`: HTTPS URL
-- ✅ `external_links`: Array (0-3 items)
+  - ✅ `created_at`: UUID v1
+  - ✅ `title`: String, 10-200 characters
+  - ✅ `summary`: String, 50-1000 characters
+  - ✅ `content`: Markdown string, 500-10000 characters
+  - ✅ `image_url`: HTTPS URL
+  - ✅ `external_links`: Array (0-3 items)
 
 ---
 
@@ -109,8 +109,8 @@ file: [audio_file.mp3]
 
 **Notes:**
 - `external_links` can be empty array `[]`
-- Still valid response
-- Image might be placeholder if Cloudinary fails
+  - Still valid response
+  - Image might be placeholder if Cloudinary fails
 
 ---
 
@@ -128,15 +128,15 @@ file: [audio_file.mp3]
 
 **Fields:**
 - ✅ `status`: "FAILED"
-- ✅ `created_at`: UUID v1
-- ✅ `error`: String describing the error
-- ❌ No `title`, `summary`, `content`, `image_url`, `external_links`
+  - ✅ `created_at`: UUID v1
+  - ✅ `error`: String describing the error
+  - ❌ No `title`, `summary`, `content`, `image_url`, `external_links`
 
 **Possible Error Messages:**
 - `"Audio processing failed: Invalid audio format"`
-- `"Audio processing failed: File too large"`
-- `"Image generation failed: [error details]"`
-- `"JSON parse error: Could not parse AI output"`
+  - `"Audio processing failed: File too large"`
+  - `"Image generation failed: [error details]"`
+  - `"JSON parse error: Could not parse AI output"`
 
 ---
 
@@ -148,7 +148,7 @@ file: [audio_file.mp3]
 
 **Notes:**
 - Empty array when no drafts in review
-- Status Code: `200 OK`
+  - Status Code: `200 OK`
 
 ---
 
@@ -207,8 +207,8 @@ file: [audio_file.mp3]
 
 **Notes:**
 - Changes draft status from `REVIEW_PENDING` → `PUBLISHED`
-- Draft no longer appears in `/api/drafts`
-- Now appears in `/api/feed`
+  - Draft no longer appears in `/api/drafts`
+  - Now appears in `/api/feed`
 
 ---
 
@@ -244,61 +244,61 @@ file: [audio_file.mp3]
 
 ### Title
 - **Type:** String
-- **Min Length:** 10 characters
-- **Max Length:** 200 characters
-- **Format:** Plain text
-- **Example:** "Understanding React Hooks in Modern Development"
+  - **Min Length:** 10 characters
+  - **Max Length:** 200 characters
+  - **Format:** Plain text
+  - **Example:** "Understanding React Hooks in Modern Development"
 
 ### Summary
 - **Type:** String
-- **Min Length:** 50 characters
-- **Max Length:** 1000 characters
-- **Format:** Plain text paragraph
-- **Example:** "A comprehensive discussion on useState and useEffect hooks..."
+  - **Min Length:** 50 characters
+  - **Max Length:** 1000 characters
+  - **Format:** Plain text paragraph
+  - **Example:** "A comprehensive discussion on useState and useEffect hooks..."
 
 ### Content
 - **Type:** String
-- **Min Length:** 500 characters
-- **Max Length:** ~10,000 characters
-- **Format:** Valid Markdown
-- **Structure:**
-  ```markdown
-  # Main Title (H1)
+  - **Min Length:** 500 characters
+  - **Max Length:** ~10,000 characters
+  - **Format:** Valid Markdown
+  - **Structure:**
+    ```markdown
+    # Main Title (H1)
   
-  Introduction paragraph...
+    Introduction paragraph...
   
-  ## Section 1 (H2)
-  Content...
+    ## Section 1 (H2)
+    Content...
   
-  ## Section 2 (H2)
-  More content...
-  ```
+    ## Section 2 (H2)
+    More content...
+    ```
 
 ### Image URL
 - **Type:** String (URL)
-- **Format:** HTTPS only
-- **Examples:**
-  - Production: `https://res.cloudinary.com/auraarchive/image/upload/v123/auraarchive/abc.png`
-  - Fallback: `https://placehold.co/600x400?text=Cover`
+  - **Format:** HTTPS only
+  - **Examples:**
+    - Production: `https://res.cloudinary.com/auraarchive/image/upload/v123/auraarchive/abc.png`
+    - Fallback: `https://placehold.co/600x400?text=Cover`
 
 ### External Links
 - **Type:** Array of Objects
-- **Min Items:** 0
-- **Max Items:** 3
-- **Item Structure:**
-  ```json
-  {
-    "title": "string (max 100 chars)",
-    "url": "string (valid HTTPS URL)",
-    "description": "string (max 200 chars)"
-  }
-  ```
+  - **Min Items:** 0
+  - **Max Items:** 3
+  - **Item Structure:**
+    ```json
+    {
+      "title": "string (max 100 chars)",
+      "url": "string (valid HTTPS URL)",
+      "description": "string (max 200 chars)"
+    }
+    ```
 
 ### Created At
 - **Type:** String (UUID v1)
-- **Format:** `xxxxxxxx-xxxx-11xx-xxxx-xxxxxxxxxxxx`
-- **Contains:** Timestamp information
-- **Example:** `"1b2ec9b9-04c5-11f1-99be-988d46ac873e"`
+  - **Format:** `xxxxxxxx-xxxx-11xx-xxxx-xxxxxxxxxxxx`
+  - **Contains:** Timestamp information
+  - **Example:** `"1b2ec9b9-04c5-11f1-99be-988d46ac873e"`
 
 ---
 
@@ -372,14 +372,14 @@ file: [audio_file.mp3]
    - Check `external_links` is array (might be empty)
    - Validate `image_url` is HTTPS
 
-2. **Before Save:**
-   - Title: 10-200 chars
-   - Summary: 50-1000 chars
-   - Content: Not empty
+   2. **Before Save:**
+      - Title: 10-200 chars
+      - Summary: 50-1000 chars
+      - Content: Not empty
 
-3. **Markdown Rendering:**
-   - Sanitize HTML if rendering markdown
-   - Support: H1-H3, bold, italic, lists, paragraphs
+   3. **Markdown Rendering:**
+      - Sanitize HTML if rendering markdown
+      - Support: H1-H3, bold, italic, lists, paragraphs
 
 ---
 
@@ -429,22 +429,22 @@ interface ActionResponse {
 
 ### Test Case 1: Successful Flow
 1. Upload audio → Get session ID
-2. Poll /api/drafts → See PROCESSING
-3. Wait 30s
-4. Poll /api/drafts → See REVIEW_PENDING with full data
-5. PUT /api/save/{id} → Update draft
-6. POST /api/publish/{id} → Publish
-7. GET /api/feed → See PUBLISHED post
+   2. Poll /api/drafts → See PROCESSING
+   3. Wait 30s
+   4. Poll /api/drafts → See REVIEW_PENDING with full data
+   5. PUT /api/save/{id} → Update draft
+   6. POST /api/publish/{id} → Publish
+   7. GET /api/feed → See PUBLISHED post
 
 ### Test Case 2: Failed Processing
 1. Upload corrupt audio
-2. Poll /api/drafts → See PROCESSING
-3. Wait 30s
-4. Poll /api/drafts → See FAILED with error message
+   2. Poll /api/drafts → See PROCESSING
+   3. Wait 30s
+   4. Poll /api/drafts → See FAILED with error message
 
 ### Test Case 3: Empty Links
 1. Upload non-technical audio (story, music)
-2. Get REVIEW_PENDING with `external_links: []`
+   2. Get REVIEW_PENDING with `external_links: []`
 
 ---
 

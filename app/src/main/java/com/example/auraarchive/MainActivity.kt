@@ -11,16 +11,18 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
-import com.example.auraarchive.ui.screens.HomeScreen
+import com.example.auraarchive.ui.navigation.AppNavigation
 import com.example.auraarchive.ui.theme.AuraArchiveTheme
+import dagger.hilt.android.AndroidEntryPoint
 
+@AndroidEntryPoint
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
             AuraArchiveTheme {
-                HomeScreen()
+                AppNavigation()
             }
         }
     }
