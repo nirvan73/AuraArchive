@@ -2,6 +2,9 @@
 
 AuraArchive is an intelligent audio-to-blog platform that transforms raw audio discussions into high-quality, structured, and publishable tech articles.
 
+Demo Video - [Click Here](https://youtube.com/shorts/dO3vPy0-mNw?feature=share)
+
+
 **Made with ❤️ by Nirvan and Dhairya**
 
 ---
