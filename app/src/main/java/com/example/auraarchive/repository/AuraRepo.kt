@@ -39,7 +39,6 @@ class AuraRepo @Inject constructor(
             val current = drafts.find { it.id == sessionId }
             emit(current)
 
-            // If it's ready or failed, stop polling
             if (current != null && (current.status == "REVIEW_PENDING" || current.status == "FAILED")) {
                 return@flow
             }

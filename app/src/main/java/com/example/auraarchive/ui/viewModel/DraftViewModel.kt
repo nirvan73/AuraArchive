@@ -29,8 +29,6 @@ class DraftViewModel @Inject constructor(
             repo.pollForDraft(postId).collect { draft ->
                 if (draft != null) {
                     _uiState.update { state ->
-                        // If we are NOT editing, we update the text fields with what the server has.
-                        // If we ARE editing, we keep the user's current typed text.
                         val shouldUpdateText = !state.isEditing
 
                         state.copy(
@@ -48,7 +46,6 @@ class DraftViewModel @Inject constructor(
         }
     }
 
-    // Call this from the UI onValueChange
     fun onTextFieldChange(title: String? = null, summary: String? = null, content: String? = null) {
         _uiState.update { state ->
             state.copy(

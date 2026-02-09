@@ -1,19 +1,38 @@
 package com.example.auraarchive.ui.screens
 
+import android.util.Log
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.*
+import androidx.compose.material3.ColorScheme
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.auraarchive.ui.components.AuraCard
 import com.example.auraarchive.ui.viewModel.HomeViewModel
@@ -44,6 +63,7 @@ fun HomeScreen(
             contentPadding = PaddingValues(bottom = 120.dp)
         ) {
             item {
+                    Log.e("checking the quotes:- ","${uiState.quote}-${uiState.author}")
                 HeroHeader(
                     colorScheme = colorScheme,
                     quote = uiState.quote,
@@ -95,6 +115,12 @@ fun HeroHeader(
     quote: String = "Loading inspiration...",
     author: String = ""
 ) {
+    val greeting = when (java.util.Calendar.getInstance().get(java.util.Calendar.HOUR_OF_DAY)) {
+        in 0..11 -> "Good Morning"
+        in 12..16 -> "Good Afternoon"
+        else -> "Good Evening"
+    }
+
     Box(
         modifier = Modifier
             .fillMaxWidth()
@@ -105,17 +131,18 @@ fun HeroHeader(
                 Brush.verticalGradient(
                     colors = listOf(colorScheme.primary, colorScheme.primaryContainer)
                 )
-            )
+            ),
+        contentAlignment = Alignment.BottomStart
     ) {
         Column(
             modifier = Modifier
-                .align(Alignment.BottomStart)
-                .padding(24.dp)
+//                .align(Alignment.BottomCenter)
+                .padding(24.dp),
         ) {
             Text(
-                text = "Your Archive",
+                text = greeting,
                 style = MaterialTheme.typography.headlineMedium,
-                fontWeight = FontWeight.Bold,
+                fontWeight = FontWeight.ExtraBold,
                 color = colorScheme.onPrimary
             )
 
@@ -123,17 +150,19 @@ fun HeroHeader(
 
             Text(
                 text = "\"$quote\"",
-                style = MaterialTheme.typography.bodyMedium,
+                style = MaterialTheme.typography.bodyLarge,
+                lineHeight = 22.sp,
                 fontStyle = androidx.compose.ui.text.font.FontStyle.Italic,
-                color = colorScheme.onPrimary.copy(alpha = 0.9f)
+                fontWeight = FontWeight.Medium,
+                color = Color.White
             )
 
             if (author.isNotEmpty()) {
                 Text(
                     text = "— $author",
-                    style = MaterialTheme.typography.labelSmall,
-                    fontWeight = FontWeight.SemiBold,
-                    color = colorScheme.onPrimary.copy(alpha = 0.7f),
+                    style = MaterialTheme.typography.labelMedium,
+                    fontWeight = FontWeight.Bold,
+                    color = Color.White.copy(alpha = 0.8f),
                     modifier = Modifier.padding(top = 4.dp)
                 )
             }

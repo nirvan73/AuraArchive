@@ -29,7 +29,6 @@ class ResourceViewModel @Inject constructor(
             _uiState.update { it.copy(isLoading = true) }
             try {
                 repo.fetchFeed().collect { allPosts ->
-                    // Filter for only published content
                     val publishedDocs = allPosts.filter { it.status == "PUBLISHED" }
                     _uiState.update { it.copy(
                         posts = publishedDocs,

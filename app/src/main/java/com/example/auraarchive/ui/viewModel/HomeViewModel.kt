@@ -8,7 +8,11 @@ import com.example.auraarchive.module.HomeUiState
 import com.example.auraarchive.repository.AuraRepo
 import com.example.auraarchive.repository.QuoteRepo
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asSharedFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -34,7 +38,7 @@ class HomeViewModel @Inject constructor(
             val response = quoteRepo.getRandomQuote()
             if (response != null) {
                 _uiState.update { it.copy(
-                    quote = response.quote, // This now contains the "en" text
+                    quote = response.quote,
                     author = response.author
                 ) }
             }
@@ -58,7 +62,7 @@ class HomeViewModel @Inject constructor(
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true) }
             val result = repo.uploadAudioFile(uri)
-            Log.e("DEBUG: Upload Result ID: ","${result?.id}") // Check this ID
+            Log.e("DEBUG: Upload Result ID: ","${result?.id}")
             if (result != null) {
                 _uiState.update { it.copy(isLoading = false) }
                 _navigateToDraft.emit(result.id)
@@ -73,12 +77,10 @@ class HomeViewModel @Inject constructor(
             repo.pollForDraft(sessionId).collect { draft ->
                 // ... logic to update list ...
                 if (draft?.status == "REVIEW_PENDING") {
-                    _uiState.update { it.copy(isLoading = false) } // Correct
+                    _uiState.update { it.copy(isLoading = false) }
                     _navigateToDraft.emit(draft.id)
                 }
             }
-            // BUG: This line runs IMMEDIATELY after launch,
-            // effectively setting loading to false before the first poll even finishes.
             _uiState.update { it.copy(isLoading = false) }
         }
     }

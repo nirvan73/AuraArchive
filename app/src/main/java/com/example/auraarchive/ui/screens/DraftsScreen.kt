@@ -164,4 +164,4 @@ fun DraftItemCard(draft: AuraPost, onClick: () -> Unit) {
             )
         }
     }
-} 
+}
