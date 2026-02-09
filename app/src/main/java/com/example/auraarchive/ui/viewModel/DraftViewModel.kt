@@ -63,6 +63,21 @@ class DraftViewModel @Inject constructor(
         _uiState.update { it.copy(isEditing = !it.isEditing) }
     }
 
+    fun fetchAllDrafts() {
+        viewModelScope.launch {
+            _uiState.update { it.copy(isLoading = true) }
+            try {
+                val response = repo.getDraftsList()
+                _uiState.update { it.copy(
+                    drafts = response.filter { it.status == "REVIEW_PENDING" },
+                    isLoading = false
+                ) }
+            } catch (e: Exception) {
+                _uiState.update { it.copy(isLoading = false, errorMessage = e.message) }
+            }
+        }
+    }
+
     fun saveDraftUpdates() {
         val state = _uiState.value
         val currentPost = state.post ?: return

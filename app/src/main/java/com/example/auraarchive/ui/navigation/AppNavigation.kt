@@ -3,14 +3,56 @@ package com.example.auraarchive.ui.navigation
 import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.animation.*
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.tween
-import androidx.compose.foundation.layout.*
+import androidx.compose.animation.expandHorizontally
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkHorizontally
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideOutHorizontally
+import androidx.compose.animation.togetherWith
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.*
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.AudioFile
+import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Description
+import androidx.compose.material.icons.filled.EditNote
+import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.List
+import androidx.compose.material3.DrawerValue
+import androidx.compose.material3.ExtendedFloatingActionButton
+import androidx.compose.material3.Icon
+import androidx.compose.material3.LargeFloatingActionButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalDrawerSheet
+import androidx.compose.material3.ModalNavigationDrawer
+import androidx.compose.material3.NavigationDrawerItem
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
+import androidx.compose.material3.rememberDrawerState
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
@@ -23,8 +65,9 @@ import com.example.auraarchive.module.AppNavigationItems
 import com.example.auraarchive.ui.components.TopBar
 import com.example.auraarchive.ui.screens.AboutScreen
 import com.example.auraarchive.ui.screens.DocContentScreen
-import com.example.auraarchive.ui.screens.HomeScreen
 import com.example.auraarchive.ui.screens.DraftReviewScreen
+import com.example.auraarchive.ui.screens.DraftsScreen
+import com.example.auraarchive.ui.screens.HomeScreen
 import com.example.auraarchive.ui.screens.ResourceScreen
 import com.example.auraarchive.ui.viewModel.HomeViewModel
 import kotlinx.coroutines.launch
@@ -94,6 +137,18 @@ fun AppNavigation() {
                     modifier = Modifier.padding(horizontal = 12.dp)
                 )
                 NavigationDrawerItem(
+                    icon = { Icon(Icons.Default.EditNote, null) },
+                    label = { Text("Drafts") },
+                    selected = currentScreen is AppNavigationItems.Drafts,
+                    onClick = {
+                        scope.launch { drawerState.close() }
+                        if (currentScreen !is AppNavigationItems.Drafts) {
+                            backstack.add(AppNavigationItems.Drafts)
+                        }
+                    },
+                    modifier = Modifier.padding(horizontal = 12.dp)
+                )
+                NavigationDrawerItem(
                     icon = { Icon(Icons.Default.Info, null) },
                     label = { Text("About") },
                     selected = currentScreen is AppNavigationItems.About,
@@ -117,6 +172,7 @@ fun AppNavigation() {
                             is AppNavigationItems.Home -> "Home"
                             is AppNavigationItems.About -> "About"
                             is AppNavigationItems.Resource -> "Resources"
+                            is AppNavigationItems.Drafts -> "Pending Drafts"
                             else -> ""
                         }
                     )
@@ -169,6 +225,13 @@ fun AppNavigation() {
                             ResourceScreen(
                                 onResourceClick = { id ->
                                     backstack.add(AppNavigationItems.DocContent(id))
+                                }
+                            )
+                        }
+                        entry<AppNavigationItems.Drafts> {
+                            DraftsScreen(
+                                onNavigateToEditor = { id ->
+                                    backstack.add(AppNavigationItems.DraftReview(id))
                                 }
                             )
                         }

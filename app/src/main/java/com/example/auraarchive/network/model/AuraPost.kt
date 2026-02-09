@@ -1,7 +1,7 @@
 package com.example.auraarchive.network.model
 
-import kotlinx.serialization.Serializable
 import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
 
 @Serializable
 data class AuraPost(
@@ -9,7 +9,7 @@ data class AuraPost(
     @SerialName("created_at") val id: String,
     val title: String? = null,
     val summary: String? = null,
-    @SerialName("blog_markdown") val content: String? = null,
+    @SerialName("content") val content: String? = null,
     @SerialName("image_url") val imageUrl: String? = null,
     @SerialName("external_links") val links: List<AuraLink> = emptyList(),
     val error: String? = null

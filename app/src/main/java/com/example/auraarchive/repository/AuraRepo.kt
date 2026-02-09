@@ -48,15 +48,18 @@ class AuraRepo @Inject constructor(
             attempts++
         }
     }
-    suspend fun getDraftById(postId: String): AuraPost? {
+
+    suspend fun getDraftsList(): List<AuraPost> {
         return try {
-            // Calls the Retrofit interface to get all drafts
-            val drafts = api.getDrafts()
-            // Finds the one matching the sessionId/postId
-            drafts.find { it.id == postId }
+            api.getDrafts()
         } catch (e: Exception) {
-            null
+            Log.e("AuraRepo", "Error fetching drafts: ${e.message}")
+            emptyList()
         }
+    }
+
+    suspend fun getDraftById(postId: String): AuraPost? {
+        return getDraftsList().find { it.id == postId }
     }
 
 
