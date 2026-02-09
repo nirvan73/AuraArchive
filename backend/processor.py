@@ -3,10 +3,12 @@ import time
 import json
 import logging
 import io
+import re
 import google.generativeai as genai
 from dotenv import load_dotenv
 import cloudinary
 import cloudinary.uploader
+import typing_extensions as typing
 
 load_dotenv()
 
@@ -26,6 +28,19 @@ cloudinary.config(
     api_key=os.getenv("CLOUDINARY_API_KEY"),
     api_secret=os.getenv("CLOUDINARY_API_SECRET")
 )
+
+# Define schemas for Structured Output
+class ExternalLink(typing.TypedDict):
+    title: str
+    url: str
+    description: str
+
+class BlogContent(typing.TypedDict):
+    title: str
+    summary: str
+    blog_markdown: str
+    image_prompt: str
+    external_links: list[ExternalLink]
 
 def generate_cover_image(description):
     """Generates a blog cover image using Imagen 3 and uploads to Cloudinary."""
@@ -101,9 +116,15 @@ def generate_club_blog_pro(audio_file_path):
         logger.error("Audio processing failed on Gemini side")
         raise ValueError("Audio processing failed")
 
-    # 3. The Prompt
+    # 3. Configure generation with Structured Output
+    generation_config = {
+        "response_mime_type": "application/json",
+        "response_schema": BlogContent,
+    }
+
+    # 4. The Prompt (Simplified/Focused on Content)
     prompt = """
-    You are an expert Content Architect and Editor. Your goal is to transform this audio into a high-quality, structured document that perfectly matches its context.
+    You are an expert Content Architect and Editor. Your goal is to transform this audio into a high-quality, structured document.
 
     ### 1. Analyze the Audio Context:
     First, identify what kind of audio this is:
@@ -126,27 +147,18 @@ def generate_club_blog_pro(audio_file_path):
     - **Summary:** A concise executive summary (2-3 sentences).
     - **Speakers:** If multiple speakers are detected, differentiate them (e.g., "Speaker A", "Host", "Guest", or by name if mentioned).
     - **Tone:** Professional yet engaging.
-    - **Links:** If specific tools, books, or real-world concepts are mentioned, provide up to 3 relevant Google Search-style links in the `external_links` array.
+    - **Links:** Act as a research assistant. Identify key topics, concepts, or tools discussed. Then, generate 3-5 high-quality external resources (Official Documentation, Coursera/EdX Courses, seminal Books, or reputable Articles) that would help the user learn more. Even if specific links aren't mentioned, infer the best resources for these topics.
+    - **Verification:** Ensure all generated links are valid, reputable, and directly relevant to the content.
 
     ### 4. Visuals:
     - **Image Prompt:** Write a 1-sentence prompt for an AI image generator to create a relevant cover image for this content.
 
-    ### Output Format (Strict JSON):
-    IMPORTANT: The `blog_markdown` field must contain the FULL detailed blog post in formatted Markdown. It should be comprehensive and detailed (at least 500 words). Do NOT wrap the markdown in JSON code blocks.
-
-    {
-        "title": "Calculated Title",
-        "summary": "Brief summary...",
-        "blog_markdown": "# Main Title\n\n## Section 1\nContent paragraph 1...\n\n## Section 2\nContent paragraph 2...",
-        "image_prompt": "Description for image generation...",
-        "external_links": [
-            {"title": "Resource Name", "url": "https://...", "description": "Brief description"}
-        ]
-    }
+    ### Output Format:
+    You must output valid JSON matching the schema provided.
     
     CRITICAL: 
-    1. `blog_markdown` MUST NOT be empty. It must be the main body of the article.
-    2. `external_links` MUST NOT contain empty objects. If no links are found, return an empty array `[]`.
+    1. `blog_markdown` MUST take up the majority of the response. It must be the FULL blog post in standard Markdown format (headers, bullets, paragraphs). Do NOT put JSON inside this string.
+    2. `external_links` MUST contain 3-5 inferred high-quality resources.
     """
 
     # 4. Generate Content with Retry Logic
@@ -156,7 +168,10 @@ def generate_club_blog_pro(audio_file_path):
     
     for attempt in range(MAX_RETRIES):
         try:
-            response = model.generate_content([audio_file, prompt])
+            response = model.generate_content(
+                [audio_file, prompt],
+                generation_config=generation_config
+            )
             logger.info(f"API call successful on attempt {attempt + 1}")
             break
         except Exception as api_error:
@@ -168,34 +183,77 @@ def generate_club_blog_pro(audio_file_path):
                 logger.error(f"API call failed after {MAX_RETRIES} attempts", exc_info=True)
                 raise
     
-    # 5. Parse JSON
+    # 5. Parse JSON (Simplified)
+    # 5. Robust JSON Parsing
+    def extract_json_from_response(response_text):
+        """Extract JSON from LLM response, handling various formats"""
+        # Try markdown code blocks first
+        code_block_pattern = r'```(?:json)?\s*(\{[\s\S]*?\})\s*```'
+        matches = re.findall(code_block_pattern, response_text, re.DOTALL)
+        if matches:
+            json_str = max(matches, key=len).strip()
+            try:
+                json.loads(json_str)
+                return json_str
+            except json.JSONDecodeError:
+                pass
+        
+        # Find JSON with balanced braces
+        brace_count = 0
+        start_idx = -1
+        
+        for i, char in enumerate(response_text):
+            if char == '{':
+                if brace_count == 0:
+                    start_idx = i
+                brace_count += 1
+            elif char == '}':
+                brace_count -= 1
+                if brace_count == 0 and start_idx != -1:
+                    json_str = response_text[start_idx:i + 1]
+                    try:
+                        json.loads(json_str)
+                        return json_str
+                    except json.JSONDecodeError:
+                        # Reset and continue searching
+                        start_idx = -1
+                        brace_count = 0
+                        continue
+        
+        # Fallback: find first { and last }
+        start_idx = response_text.find('{')
+        end_idx = response_text.rfind('}') + 1
+        
+        if start_idx == -1 or end_idx <= 0:
+             # Just try parsing the whole text if no braces found (unlikely for JSON)
+             # or return raw regex fail.
+             # Actually, just parse the raw text as a last resort
+             return response_text
+        
+        json_str = response_text[start_idx:end_idx]
+        return json_str
+
     try:
-        # Clean up code blocks if Gemini adds them
-        # Clean up code blocks if Gemini adds them
-        text = response.text.strip()
-        if text.startswith("```"):
-            # Remove first line (```json or ```)
-            text = text.split("\n", 1)[1]
-            # Remove last line (```)
-            if text.strip().endswith("```"):
-                text = text.strip()[:-3]
+        json_str = extract_json_from_response(response.text)
+        data = json.loads(json_str)
         
-        # Additional cleaning for potential "json" label at start
-        text = text.replace("```json", "").replace("```", "").strip()
-        data = json.loads(text)
-        
+        # Safety Check for nested JSON string in blog_markdown (Double encoding)
+        content = data.get("blog_markdown", "").strip()
+        if content.startswith("{") and "blog_markdown" in content:
+            logger.warning("Model returned nested JSON in blog_markdown. Attempting to unwrap.")
+            try:
+                nested_data = json.loads(content)
+                if isinstance(nested_data, dict) and "blog_markdown" in nested_data:
+                    data["blog_markdown"] = nested_data["blog_markdown"]
+                    logger.info("Successfully unwrapped nested JSON")
+            except:
+                pass
+
         # Sanitize Validations
         if not data.get("blog_markdown"):
             data["blog_markdown"] = f"# {data.get('title', 'Draft')}\n\n{data.get('summary', '')}"
             
-        # Filter empty external links
-        if "external_links" in data:
-            data["external_links"] = [
-                link for link in data["external_links"] 
-                if link.get("title") and link.get("url")
-            ]
-            
-        logger.info("Successfully parsed and sanitized AI response")
+        logger.info("Successfully parsed refined AI response")
     except Exception as e:
         logger.error(f"JSON parse error: {e}", exc_info=True)
         # Fallback data
